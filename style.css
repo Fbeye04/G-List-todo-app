@@ -132,6 +132,11 @@ header {
 
 .username {
   color: var(--text-main);
+  text-transform: capitalize;
+}
+
+.user-position {
+  text-transform: capitalize;
 }
 
 .date-time-container {
