@@ -7,6 +7,7 @@ const submitBtn = document.getElementById("submit-btn");
 const tasksContainer = document.getElementById("list-today");
 const priorityBtns = document.querySelectorAll(".chip-btn");
 const dateInput = document.getElementById("dateInput");
+const completedList = document.getElementById("completedList");
 
 // lihat terlebih dahulu apakah ada item username dan user position di local storage
 const storedName = localStorage.getItem("username");
@@ -112,6 +113,23 @@ function addTask(e) {
     `;
 
   tasksContainer.appendChild(taskItem);
+
+  const targetedCheckbox = taskItem.querySelector('input[type="checkbox"]');
+
+  targetedCheckbox.addEventListener("change", () => {
+    if (targetedCheckbox.checked) {
+      completedList.appendChild(taskItem);
+      taskItem.classList.add("completed");
+    } else {
+      tasksContainer.appendChild(taskItem);
+      taskItem.classList.remove("completed");
+    }
+  });
+
+  const deleteBtn = taskItem.querySelector(".delete-btn");
+  deleteBtn.addEventListener("click", () => {
+    taskItem.remove();
+  });
 
   // mengosongkan dan mengembalikan nilai input maupun currentPriority
   inputBox.value = "";

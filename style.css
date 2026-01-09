@@ -385,11 +385,24 @@ input[type="checkbox"]:checked::after {
   align-items: center;
   padding: 1rem;
   border-bottom: 1.5px solid var(--border-light);
+  gap: 0.5rem;
+}
+
+.done-title span {
+  font-size: 1.25rem;
+  font-weight: 500;
+}
+
+/* .done-title {
+  display: flex;
+  align-items: center;
+  padding: 1rem;
+  border-bottom: 1.5px solid var(--border-light);
 }
 
 .done-title .material-symbols-outlined {
   font-size: 32px;
-}
+} */
 
 .finished-tasks {
   display: flex;
