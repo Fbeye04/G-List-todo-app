@@ -2,10 +2,18 @@ const userName = document.getElementById("username");
 const userPosition = document.getElementById("userPosition");
 const currentDate = document.getElementById("currentDate");
 const currentTime = document.getElementById("currentTime");
+const inputBox = document.getElementById("taskInput");
+const submitBtn = document.getElementById("submit-btn");
+const tasksContainer = document.getElementById("list-today");
+const priorityBtns = document.querySelectorAll(".chip-btn");
+const dateInput = document.getElementById("dateInput");
 
 // lihat terlebih dahulu apakah ada item username dan user position di local storage
 const storedName = localStorage.getItem("username");
 const storedPosition = localStorage.getItem("userPosition");
+
+// nilai awal prioritas tugas agar tidak kosong
+let currentPriority = "low";
 
 function updateClock() {
   const present = new Date(); /* mengetahui waktu sekarang */
@@ -49,3 +57,79 @@ if (storedName) {
 setInterval(updateClock, 1000);
 /* pemanggilan fungsi agar saat pertama kali web digunakan tidak terjadi delay waktu akibat interval di atas */
 updateClock();
+
+function addTask(e) {
+  e.preventDefault(); /* berhentikan reload akibat button submit di dalam form karena langsung mengirim data ke server dan memuat ulang */
+
+  const taskText =
+    inputBox.value.trim(); /* mengambil nilai dari input sekaligus menghapus spasi di awal dan akhir kalimat */
+  const taskDate = dateInput.value;
+  let date =
+    ""; /* variabel penampung nilai taskDate dahulu agar nanti kalau ada kosong bisa diolah agar tidak langsung kosong */
+
+  // if statement untuk memberi peringatan jika tidak ada judul/deskripsi tugas
+  if (taskText.length === 0) {
+    alert("The task title must be written down");
+    return;
+  }
+
+  if (taskDate === "") {
+    date = "No date";
+  } else {
+    date = taskDate;
+  }
+
+  // container tugas per satuan (berbeda dengan task-by date yang bersifat tempa kumpul semua tugas)
+  const taskItem = document.createElement("div");
+  taskItem.classList.add("tasks");
+
+  taskItem.innerHTML = `
+    <div class="check-detail">
+        <input
+            type="checkbox"
+            name="checkbox"
+            id="checkbox"
+            aria-label="Tandai tugas sebagai selesai" />
+
+        <div class="detail-task">
+            <h4>${taskText}</h4>
+
+            <div class="additional-info">
+                <span class="priority ${currentPriority}">${currentPriority}</span>
+                <div class="deadline">
+                    <span class="material-symbols-outlined">
+                        calendar_today
+                    </span>
+                    <span class="due">${date}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <button class="delete-btn" aria-label="Hapus tugas">
+        <span class="material-symbols-outlined"> close </span>
+    </button>
+    `;
+
+  tasksContainer.appendChild(taskItem);
+
+  // mengosongkan dan mengembalikan nilai input maupun currentPriority
+  inputBox.value = "";
+  currentPriority = "low";
+  dateInput.value = "";
+}
+
+submitBtn.addEventListener("click", addTask);
+
+// teknik mudah agar tidak menulis satu persatu event listener dari tiap button priority
+priorityBtns.forEach((btn) => {
+  btn.addEventListener("click", () => {
+    priorityBtns.forEach((item) => {
+      item.classList.remove("active");
+    });
+
+    btn.classList.add("active");
+
+    currentPriority = btn.dataset.value;
+  });
+});

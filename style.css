@@ -169,15 +169,15 @@ header {
   width: 100%;
   border: 1.5px solid var(--border-light);
   border-radius: var(--radius-btn);
-  padding: 0.5rem 0;
   cursor: pointer;
 }
 
 .input-group input {
   width: 100%;
   border: transparent;
-  padding: 0 1rem;
+  padding: 0.5rem 1rem;
   font-size: 1rem;
+  background-color: transparent;
 }
 
 .input-group input:focus {
@@ -198,6 +198,14 @@ header {
   cursor: pointer;
   flex: 1;
   font-size: 1rem;
+}
+
+.chip-btn.active,
+.chip-btn.active:focus,
+.chip-btn.active:hover {
+  background-color: var(--primary-blue);
+  color: white;
+  border-color: var(--primary-blue);
 }
 
 input[type="date"] {
@@ -234,21 +242,20 @@ input[type="date"] {
   box-shadow: var(--shadow-md);
 }
 
-.tasks-list h2,
-.tasks-by-date {
+.tasks-list h2 {
   border-bottom: 1.5px solid var(--border-light);
   padding: 1rem;
 }
 
-.last-task {
-  border-bottom: none;
+.tasks-by-date {
+  padding: 0.5rem 0;
 }
 
 .tasks {
   display: flex;
   align-items: start;
   justify-content: space-between;
-  margin-top: 0.8rem;
+  padding: 0.5rem 1rem;
 }
 
 .check-detail {
@@ -301,29 +308,54 @@ input[type="checkbox"]:checked::after {
   font-weight: 700;
 }
 
+.additional-info {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
 .priority,
-.overdue {
+.deadline {
   border-radius: var(--radius-pill);
   padding: 0.3rem 0.6rem;
   font-weight: 500;
   font-size: 0.9rem;
+  text-transform: capitalize;
 }
 
-.priority {
+.priority.low {
   background-color: var(--prio-low-bg);
   color: var(--prio-low-text);
   border: 1px solid var(--prio-low-text);
 }
 
-.overdue {
+.priority.medium {
+  background-color: var(--prio-med-bg);
+  color: var(--prio-med-text);
+  border: 1px solid var(--prio-med-text);
+}
+
+.priority.high {
   background-color: var(--prio-high-bg);
   color: var(--prio-high-text);
   border: 1px solid var(--prio-high-text);
 }
 
-.overdue-task {
+.deadline {
+  display: flex;
+  align-items: center;
+  gap: 0.2rem;
+  background-color: transparent;
+  color: var(--text-main);
+  border: 1px solid var(--text-main);
+}
+
+.deadline .material-symbols-outlined {
+  font-size: 16px;
+}
+
+.detail-task h4.deadline-task {
   color: var(--prio-high-text);
-  background-color: var(--prio-high-bg);
 }
 
 .delete-btn {
@@ -409,8 +441,7 @@ input,
   background-color: white;
 }
 
-input[type="date"]:focus,
-.chip-btn:focus {
+input[type="date"]:focus {
   outline: none;
   border-color: var(--primary-blue) !important;
   background-color: white;
