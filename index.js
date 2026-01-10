@@ -4,10 +4,11 @@ const currentDate = document.getElementById("currentDate");
 const currentTime = document.getElementById("currentTime");
 const inputBox = document.getElementById("taskInput");
 const submitBtn = document.getElementById("submit-btn");
-const tasksContainer = document.getElementById("list-today");
+const tasksContainer = document.getElementById("todayList");
 const priorityBtns = document.querySelectorAll(".chip-btn");
 const dateInput = document.getElementById("dateInput");
 const completedList = document.getElementById("completedList");
+const deleteAllBtns = document.querySelectorAll(".delete-all-btn");
 
 // lihat terlebih dahulu apakah ada item username dan user position di local storage
 const storedName = localStorage.getItem("username");
@@ -70,14 +71,40 @@ function addTask(e) {
 
   // if statement untuk memberi peringatan jika tidak ada judul/deskripsi tugas
   if (taskText.length === 0) {
-    alert("The task title must be written down");
+    alert("The task must be written down");
     return;
   }
 
+  // tangkap lagi data hari ini untuk logika if/else date class
+  const todayDate = new Date();
+
+  let day = String(todayDate.getDate()).padStart(2, "0");
+  let month = String(todayDate.getMonth() + 1).padStart(
+    2,
+    "0"
+  ); /* karena dimulai dari 0 maka harus ditambah 1, lalu untuk memastikan tampil dengan 2 angka */
+  let year = String(todayDate.getFullYear()).padStart(2, "0");
+
+  let todayString = `${year}-${month}-${day}`;
+
+  let dateClass = ""; /* kelas baru untuk styling tambahan */
+
   if (taskDate === "") {
     date = "No date";
+    dateClass = "";
   } else {
     date = taskDate;
+
+    if (taskDate < todayString) {
+      dateClass = "overdue";
+      date = `${dateClass}: ${taskDate}`;
+    } else if (taskDate === todayString) {
+      dateClass = "today";
+      date = `${dateClass}`;
+    } else {
+      dateClass = "future";
+      date = `${taskDate}`;
+    }
   }
 
   // container tugas per satuan (berbeda dengan task-by date yang bersifat tempa kumpul semua tugas)
@@ -93,11 +120,11 @@ function addTask(e) {
             aria-label="Tandai tugas sebagai selesai" />
 
         <div class="detail-task">
-            <h4>${taskText}</h4>
+            <h4 class="${dateClass}">${taskText}</h4>
 
             <div class="additional-info">
                 <span class="priority ${currentPriority}">${currentPriority}</span>
-                <div class="deadline">
+                <div class="deadline ${dateClass}">
                     <span class="material-symbols-outlined">
                         calendar_today
                     </span>
@@ -114,8 +141,10 @@ function addTask(e) {
 
   tasksContainer.appendChild(taskItem);
 
+  // targetkan checkbox yang ada di dalam template literals untuk digunakan kembali dalam pemindahan tugas dari bagian to do ke completed
   const targetedCheckbox = taskItem.querySelector('input[type="checkbox"]');
 
+  // oper-oper tugas memanfaatkan class completed
   targetedCheckbox.addEventListener("change", () => {
     if (targetedCheckbox.checked) {
       completedList.appendChild(taskItem);
@@ -135,6 +164,14 @@ function addTask(e) {
   inputBox.value = "";
   currentPriority = "low";
   dateInput.value = "";
+
+  priorityBtns.forEach((btn) => {
+    if (btn.dataset.value === "low") {
+      btn.classList.add("active");
+    } else {
+      btn.classList.remove("active");
+    }
+  });
 }
 
 submitBtn.addEventListener("click", addTask);
@@ -149,5 +186,19 @@ priorityBtns.forEach((btn) => {
     btn.classList.add("active");
 
     currentPriority = btn.dataset.value;
+  });
+});
+
+deleteAllBtns.forEach((btn) => {
+  btn.addEventListener("click", () => {
+    const confirmMessage = confirm(
+      "Are you sure you want to delete all tasks?"
+    );
+
+    if (confirmMessage) {
+      // kosongkan tugas secara keseluruhan melalu penghapusan konten dari kontainer
+      tasksContainer.innerHTML = "";
+      completedList.innerHTML = "";
+    }
   });
 });
