@@ -276,6 +276,7 @@ input[type="date"] {
   text-decoration: none;
 }
 
+/* Custom Checkbox */
 input[type="checkbox"] {
   appearance: none;
   width: 1.25rem;
@@ -303,10 +304,12 @@ input[type="checkbox"]:checked::after {
   font-weight: 700;
 }
 
+/* Overdue Styling */
 .tasks.overdue .detail-task h4 {
   color: var(--danger);
 }
 
+/* Task Meta Info (Priority & Date) */
 .additional-info {
   display: flex;
   align-items: center;
@@ -358,22 +361,24 @@ input[type="checkbox"]:checked::after {
   font-size: 16px;
 }
 
-.detail-task h4.deadline-task {
-  color: var(--prio-high-text);
-}
-
+/* Delete Button */
 .delete-btn {
   background-color: transparent;
   border: none;
   cursor: pointer;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
 }
 
-.finished-tasks .delete-btn:hover,
-.delete-all-btn:hover,
-.delete-all-btn.desktop:hover {
-  background-color: #fee2e2;
-  color: #dc2626;
-  border-color: #dc2626;
+.tasks .delete-btn:hover {
+  background-color: #e5e7eb;
+  color: var(--text-main);
+  transform: rotate(90deg);
 }
 
 /* =========================================
@@ -417,23 +422,30 @@ input[type="checkbox"]:checked::after {
   font-weight: 600;
   box-shadow: var(--shadow-md);
   cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.delete-all-btn:hover,
+.delete-all-btn.desktop:hover {
+  background-color: #fee2e2;
+  color: #b91c1c;
+  border-color: #b91c1c;
 }
 
 .delete-all-btn.desktop {
   display: none;
 }
 
-/* --- Transition --- */
+/* --- Common Transitions --- */
 button,
 input,
 .chip-btn,
 .input-group,
-.task-input-card,
-.delete-btn {
+.task-input-card {
   transition: all 0.2s ease;
 }
 
-/* --- Input focu --- */
+/* --- Input Focus States --- */
 .input-group:focus-within {
   border-color: var(--primary-blue);
   background-color: white;
@@ -453,103 +465,25 @@ input[type="date"]:hover,
   border-color: #d1d5db;
 }
 
-/* --- Button icon --- */
-.delete-btn {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.tasks .delete-btn:hover {
-  background-color: #e5e7eb;
-  color: var(--text-main);
-  transform: rotate(90deg);
-}
-
-.tasks .delete-btn:hover {
-  background-color: #f1f3f4;
-  color: var(--text-main);
-}
-
-.finished-tasks .delete-btn:hover,
-.delete-all-btn:hover,
-.delete-all-btn.desktop:hover {
-  background-color: #fee2e2;
-  color: #b91c1c;
-  border-color: #b91c1c;
-}
-
-/* --- Active state --- */
+/* --- Active state (Press) --- */
 button:active,
 .chip-btn:active {
   transform: scale(0.98);
 }
 
-/* animations popIn */
-@keyframes popIn {
-  0% {
-    transform: translate(-50%, -50%) scale(0);
-  }
-  50% {
-    transform: translate(-50%, -50%) scale(1.2);
-  }
-  100% {
-    transform: translate(-50%, -50%) scale(1);
-  }
-}
-
-input[type="checkbox"]:checked::after {
-  animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
-}
-
-/* animations slide in & slide out */
-.task-slide-in {
-  animation: slideIn 0.4s ease-out forwards;
-}
-
-@keyframes slideIn {
-  from {
-    opacity: 0;
-    transform: translateY(-20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.task-slide-out {
-  animation: slideOut 0.4s ease-in forwards;
-}
-
-@keyframes slideOut {
-  from {
-    opacity: 1;
-    transform: translateX(0);
-  }
-  to {
-    opacity: 0;
-    transform: translateX(100%);
-  }
-}
+/* --- Media Queries --- */
 
 @media (width > 768px) {
   h1 {
     font-size: 1.75rem;
   }
-
   p,
   time {
     font-size: 1.3rem;
   }
-
   h2 {
     font-size: 1.6rem;
   }
-
   h3,
   h4 {
     font-size: 1.5rem;
@@ -576,8 +510,6 @@ input[type="checkbox"]:checked::after {
 
   .tasks-list h2,
   .tasks-by-date,
-  .done-title,
-  .finished-tasks,
   .task-input-card {
     padding: 1.25rem;
   }
@@ -592,12 +524,17 @@ input[type="checkbox"]:checked::after {
   .app-layout {
     display: grid;
     grid-template-columns: 400px 1fr;
+    height: 100vh;
+    overflow: hidden;
   }
 
   aside {
     background-color: white;
-    height: 100vh;
     padding-bottom: 1rem;
+    height: 100%;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
   }
 
   .brand {
@@ -638,13 +575,19 @@ input[type="checkbox"]:checked::after {
 
   main {
     padding: 2.5rem;
+    height: 100%;
+    overflow-y: auto;
   }
 
   .tasks-list h2,
-  .tasks-by-date,
-  .done-title,
-  .finished-tasks {
+  .completed-tasks h2 {
     padding: 1rem 1.5rem;
+  }
+
+  .tasks-by-date {
+    max-height: 400px;
+    overflow-y: auto;
+    padding-right: 0.5rem;
   }
 
   footer {

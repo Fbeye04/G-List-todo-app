@@ -1,26 +1,27 @@
-const userName = document.getElementById("username");
-const userPosition = document.getElementById("userPosition");
-const currentDate = document.getElementById("currentDate");
-const currentTime = document.getElementById("currentTime");
-const inputBox = document.getElementById("taskInput");
-const submitBtn = document.getElementById("submit-btn");
-const tasksContainer = document.getElementById("todayList");
-const priorityBtns = document.querySelectorAll(".chip-btn");
+const userNameDisplay = document.getElementById("username");
+const userPositionDisplay = document.getElementById("userPosition");
+const currentDateDisplay = document.getElementById("currentDate");
+const currentTimeDisplay = document.getElementById("currentTime");
+const taskInput = document.getElementById("taskInput");
 const dateInput = document.getElementById("dateInput");
-const completedList = document.getElementById("completedList");
+const addTaskBtn = document.getElementById("submit-btn");
+const priorityBtns = document.querySelectorAll(".chip-btn");
 const deleteAllBtns = document.querySelectorAll(".delete-all-btn");
+const todoListContainer = document.getElementById("todayList");
+const completedListContainer = document.getElementById("completedList");
 
-// lihat terlebih dahulu apakah ada item username dan user position di local storage
+// Retrieve user info from LocalStorage
 const storedName = localStorage.getItem("username");
 const storedPosition = localStorage.getItem("userPosition");
 
-// nilai awal prioritas tugas agar tidak kosong
+// Initialize state
 let currentPriority = "low";
+let taskList = [];
 
+// Updates the clock and date display in real-time.
 function updateClock() {
-  const present = new Date(); /* mengetahui waktu sekarang */
+  const now = new Date();
 
-  //   opsi tampilan seperti apa dari hari, tanggal, dan bulan begitu juga yang waktu
   const dateOptions = {
     weekday: "long",
     day: "numeric",
@@ -33,102 +34,70 @@ function updateClock() {
     hour12: false,
   };
 
-  //   mengubah nilai dari opsi hari dan waktu tadi menjadi teks
-  const dateText = present.toLocaleDateString("en-US", dateOptions);
-  const timeText = present.toLocaleTimeString("en-US", timeOptions);
-
-  //   menempelkan teks hari dan waktu sebelumnya
-  currentDate.textContent = dateText;
-  currentTime.textContent = timeText;
+  currentDateDisplay.textContent = now.toLocaleDateString("en-US", dateOptions);
+  currentTimeDisplay.textContent = now.toLocaleTimeString("en-US", timeOptions);
 }
 
-// logika if terjadi saat nama sudah ada di local storage sedangkan else adalah kebalikannya
-if (storedName) {
-  userName.textContent = storedName;
-  userPosition.textContent = storedPosition;
-} else {
-  const yourName = prompt("What's your name?");
-  const yourPosition = prompt("What's your position?");
-  localStorage.setItem("username", yourName);
-  localStorage.setItem("userPosition", yourPosition);
-  userName.textContent = yourName;
-  userPosition.textContent = yourPosition;
+// Saves the current taskList array to LocalStorage.
+function saveData() {
+  localStorage.setItem("myTaskData", JSON.stringify(taskList));
 }
 
-/* jalankan updateClock berulan-ulang agar real-time tiap satu detik */
-setInterval(updateClock, 1000);
-/* pemanggilan fungsi agar saat pertama kali web digunakan tidak terjadi delay waktu akibat interval di atas */
-updateClock();
-
-function addTask(e) {
-  e.preventDefault(); /* berhentikan reload akibat button submit di dalam form karena langsung mengirim data ke server dan memuat ulang */
-
-  const taskText =
-    inputBox.value.trim(); /* mengambil nilai dari input sekaligus menghapus spasi di awal dan akhir kalimat */
-  const taskDate = dateInput.value;
-  let date =
-    ""; /* variabel penampung nilai taskDate dahulu agar nanti kalau ada kosong bisa diolah agar tidak langsung kosong */
-
-  // if statement untuk memberi peringatan jika tidak ada judul/deskripsi tugas
-  if (taskText.length === 0) {
-    alert("The task must be written down");
-    return;
-  }
-
-  // tangkap lagi data hari ini untuk logika if/else date class
-  const todayDate = new Date();
-
-  let day = String(todayDate.getDate()).padStart(2, "0");
-  let month = String(todayDate.getMonth() + 1).padStart(
-    2,
-    "0"
-  ); /* karena dimulai dari 0 maka harus ditambah 1, lalu untuk memastikan tampil dengan 2 angka */
-  let year = String(todayDate.getFullYear()).padStart(2, "0");
-
-  let todayString = `${year}-${month}-${day}`;
-
-  let dateClass = ""; /* kelas baru untuk styling tambahan */
-
-  if (taskDate === "") {
-    date = "No date";
-    dateClass = "";
+// Handles user greeting logic (load from storage or prompt user).
+function initUserGreeting() {
+  if (storedName) {
+    userNameDisplay.textContent = storedName;
+    userPositionDisplay.textContent = storedPosition;
   } else {
-    date = taskDate;
+    const inputName = prompt("What's your name?");
+    const inputPosition = prompt("What's your position?");
 
-    if (taskDate < todayString) {
-      dateClass = "overdue";
-      date = `${dateClass}: ${taskDate}`;
-    } else if (taskDate === todayString) {
-      dateClass = "today";
-      date = `${dateClass}`;
-    } else {
-      dateClass = "future";
-      date = `${taskDate}`;
-    }
+    // Simple validation to avoid null if user cancels prompt
+    const finalName = inputName || "Guest";
+    const finalPosition = inputPosition || "Developer";
+
+    localStorage.setItem("username", finalName);
+    localStorage.setItem("userPosition", finalPosition);
+
+    userNameDisplay.textContent = finalName;
+    userPositionDisplay.textContent = finalPosition;
   }
+}
 
-  // container tugas per satuan (berbeda dengan task-by date yang bersifat tempa kumpul semua tugas)
-  const taskItem = document.createElement("div");
-  taskItem.classList.add("tasks");
+/**
+ * Renders the task list to the DOM based on the taskList array.
+ * Clears existing lists and re-builds them.
+ */
+function renderTasks() {
+  todoListContainer.innerHTML = "";
+  completedListContainer.innerHTML = "";
 
-  taskItem.innerHTML = `
+  taskList.forEach((task) => {
+    const taskItem = document.createElement("div");
+    taskItem.classList.add("tasks");
+
+    // Determine status classes and attributes
+    const checkStatusTask = task.isCompleted ? "checked" : "";
+    const statusClass = task.isCompleted ? "completed" : "";
+
+    taskItem.innerHTML = `
     <div class="check-detail">
         <input
             type="checkbox"
             name="checkbox"
-            id="checkbox"
-            aria-label="Tandai tugas sebagai selesai" />
+            aria-label="Tandai tugas sebagai selesai"
+            ${checkStatusTask} />
 
         <div class="detail-task">
-            <h4 class="${dateClass}">${taskText}</h4>
+            <h4 class="${task.styleDate} ${statusClass}">${task.text}</h4>
 
             <div class="additional-info">
-                <span class="priority ${currentPriority}">${currentPriority}</span>
-                <div class="deadline ${dateClass}">
+                <span class="priority ${task.priority}">${task.priority}</span>
+                <div class="deadline ${task.styleDate}">
                     <span class="material-symbols-outlined">
                         calendar_today
                     </span>
-                    <span class="due">${date}</span>
+                    <span class="due">${task.dateDisplay}</span>
                 </div>
             </div>
         </div>
@@ -139,31 +108,35 @@ function addTask(e) {
     </button>
     `;
 
-  tasksContainer.appendChild(taskItem);
-
-  // targetkan checkbox yang ada di dalam template literals untuk digunakan kembali dalam pemindahan tugas dari bagian to do ke completed
-  const targetedCheckbox = taskItem.querySelector('input[type="checkbox"]');
-
-  // oper-oper tugas memanfaatkan class completed
-  targetedCheckbox.addEventListener("change", () => {
-    if (targetedCheckbox.checked) {
-      completedList.appendChild(taskItem);
+    // Append to appropriate container based on status
+    if (task.isCompleted) {
       taskItem.classList.add("completed");
+      completedListContainer.appendChild(taskItem);
     } else {
-      tasksContainer.appendChild(taskItem);
-      taskItem.classList.remove("completed");
+      todoListContainer.appendChild(taskItem);
     }
-  });
 
-  const deleteBtn = taskItem.querySelector(".delete-btn");
-  deleteBtn.addEventListener("click", () => {
-    taskItem.remove();
-  });
+    // Event Listener: Delete specific task
+    const deleteBtn = taskItem.querySelector(".delete-btn");
+    deleteBtn.addEventListener("click", () => {
+      taskList = taskList.filter((item) => item.id !== task.id);
+      saveData();
+      renderTasks();
+    });
 
-  // mengosongkan dan mengembalikan nilai input maupun currentPriority
-  inputBox.value = "";
+    // Event Listener: Toggle completion status
+    const checkbox = taskItem.querySelector('input[type="checkbox"]');
+    checkbox.addEventListener("change", () => {
+      task.isCompleted = !task.isCompleted;
+      saveData();
+      renderTasks();
+    });
+  });
+}
+
+// Resets priority selection to 'low' (default).
+function resetPriorityToLow() {
   currentPriority = "low";
-  dateInput.value = "";
 
   priorityBtns.forEach((btn) => {
     if (btn.dataset.value === "low") {
@@ -174,11 +147,85 @@ function addTask(e) {
   });
 }
 
-submitBtn.addEventListener("click", addTask);
+// Handles adding a new task to the list.
+function handleAddTask(e) {
+  e.preventDefault(); /* Prevent form submission reload */
 
-// teknik mudah agar tidak menulis satu persatu event listener dari tiap button priority
+  const taskText =
+    taskInput.value.trim(); /* mtake the value from the input and remove spaces at the beginning and end of the sentence */
+  const inputDateVal = dateInput.value;
+
+  // Validation: Task text cannot be empty
+  if (taskText.length === 0) {
+    alert("The task must be written down");
+    return;
+  }
+
+  // capture today's data again for the date class if/else logic
+  const todayDate = new Date();
+  let day = String(todayDate.getDate()).padStart(2, "0");
+  let month = String(todayDate.getMonth() + 1).padStart(
+    2,
+    "0"
+  ); /* Since it starts from 0, it must be added to 1, then to ensure it appears with 2 digits. */
+  let year = String(todayDate.getFullYear()).padStart(2, "0");
+  let todayString = `${year}-${month}-${day}`;
+
+  let dateDisplay =
+    ""; /* store the inputDateVal value in a variable first so that if it is empty, it can be processed later so that it is not immediately empty */
+  let dateClass = ""; /* new class for additional styling */
+
+  if (inputDateVal === "") {
+    dateDisplay = "No date";
+    dateClass = "";
+  } else {
+    if (inputDateVal < todayString) {
+      dateClass = "overdue";
+      dateDisplay = `${dateClass}: ${inputDateVal}`;
+    } else if (inputDateVal === todayString) {
+      dateClass = "today";
+      dateDisplay = `${dateClass}`;
+    } else {
+      dateClass = "future";
+      dateDisplay = `${inputDateVal}`;
+    }
+  }
+
+  // store other data used in task render
+  const newTaskData = {
+    id: Date.now(),
+    text: taskText,
+    priority: currentPriority,
+    dateDisplay: dateDisplay,
+    styleDate: dateClass,
+    isCompleted: false,
+  };
+
+  taskList.push(newTaskData);
+  saveData();
+  renderTasks();
+
+  // Reset form inputs
+  taskInput.value = "";
+  dateInput.value = "";
+  resetPriorityToLow();
+}
+
+// Loads task data from LocalStorage on startup
+function loadTasks() {
+  const data = localStorage.getItem("myTaskData");
+  if (data) {
+    taskList = JSON.parse(data);
+    renderTasks();
+  }
+}
+
+addTaskBtn.addEventListener("click", handleAddTask);
+
+// An easy technique to avoid writing event listeners for each button priority one by one
 priorityBtns.forEach((btn) => {
   btn.addEventListener("click", () => {
+    // Remove active class from all, add to clicked
     priorityBtns.forEach((item) => {
       item.classList.remove("active");
     });
@@ -196,9 +243,19 @@ deleteAllBtns.forEach((btn) => {
     );
 
     if (confirmMessage) {
-      // kosongkan tugas secara keseluruhan melalu penghapusan konten dari kontainer
-      tasksContainer.innerHTML = "";
-      completedList.innerHTML = "";
+      taskList = []; /* Clear array */
+      saveData();
+      renderTasks();
     }
   });
 });
+
+/* Run updateClock repeatedly to ensure real-time every second */
+setInterval(updateClock, 1000);
+updateClock(); // Initial call to avoid delay
+
+// Initialize User Info
+initUserGreeting();
+
+// Load Data
+loadTasks();
